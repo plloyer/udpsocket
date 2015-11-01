@@ -11,7 +11,7 @@ public:
 
 	bool open(int port);
 	bool send(const char* address, int port, char* data, int length);
-	bool receive();
+	int receive(char* data, int length);
 
 private:
 	int mSocket;

@@ -16,11 +16,6 @@
 #include <sys/socket.h>
 #endif
 
-namespace
-{
-	const uint32_t sBufferSize = 2048;
-}
-
 void UDPSocket::Startup()
 {
 #ifdef _WIN32
@@ -99,34 +94,31 @@ bool UDPSocket::send(const char* address, int port, char* data, int length)
 	return true;
 }
 
-bool UDPSocket::receive()
+int UDPSocket::receive(char* data, int length)
 {
 	struct sockaddr_in si_other;
 	int slen = sizeof(si_other);
-	char buf[sBufferSize];
-	//clear the buffer by filling null, it might have previously received data
-	memset(buf, '\0', sBufferSize);
 
 	//try to receive some data, this is a blocking call
 	int recv_len = 0;
-	if ((recv_len = recvfrom(mSocket, buf, sBufferSize, 0, (struct sockaddr *) &si_other, &slen)) == SOCKET_ERROR)
+	if ((recv_len = recvfrom(mSocket, data, length, 0, (struct sockaddr *) &si_other, &slen)) == SOCKET_ERROR)
 	{
 		if (WSAGetLastError() != WSAEWOULDBLOCK)
 		{
 			printf("recvfrom() failed with error code : %d\n", WSAGetLastError());
 		}
 
-		return false;
+		return 0;
 	}
 
-	if (recv_len == 0)
-		return false;
+	if (recv_len > 0)
+	{
+		// Print info about the received data as a string and show from where it came
+		char address[128];
+		inet_ntop(AF_INET, &si_other.sin_addr, address, 128);
+		printf("Received packet from %s:%d\n", address, ntohs(si_other.sin_port));
+		printf("Data: %s\n", data);
+	}
 
-	//print details of the client/peer and the data received
-	char address[128];
-	inet_ntop(AF_INET, &si_other.sin_addr, address, 128);
-	printf("Received packet from %s:%d\n", address, ntohs(si_other.sin_port));
-	printf("Data: %s\n", buf);
-
-	return true;
+	return recv_len;
 }
