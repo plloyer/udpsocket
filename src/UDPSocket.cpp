@@ -11,9 +11,26 @@
 #include <windows.h>
 #include <Ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
+
+#define socketerrno WSAGetLastError()
+#define SOCKET_EWOULDBLOCK WSAEWOULDBLOCK
+typedef int socktlen;
 #else
-#include <netdb.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <sys/types.h>
 #include <sys/socket.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+
+#define INVALID_SOCKET (-1)
+#define SOCKET_ERROR   (-1)
+
+#include <errno.h>
+#define socketerrno errno
+#define SOCKET_EWOULDBLOCK EWOULDBLOCK
+typedef socklen_t socktlen;
 #endif
 
 void UDPSocket::Startup()
@@ -22,7 +39,7 @@ void UDPSocket::Startup()
 	WSADATA wsa;
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 	{
-		printf("Failed to initialize Winsock. Error Code : %d", WSAGetLastError());
+		printf("Failed to initialize Winsock. Error Code : %d", socketerrno);
 		exit(EXIT_FAILURE);
 	}
 #endif
@@ -42,7 +59,11 @@ UDPSocket::UDPSocket()
 
 UDPSocket::~UDPSocket()
 {
+#ifdef _WIN32
 	closesocket(mSocket);
+#else
+	close(mSocket);
+#endif
 }
 
 bool UDPSocket::open(int port)
@@ -65,12 +86,16 @@ bool UDPSocket::open(int port)
 
 	// Set socket to non blocking when calling recvfrom
 	u_long iMode=1;
+#ifdef _WIN32
 	ioctlsocket(mSocket, FIONBIO, &iMode);
+#else
+	ioctl(mSocket, FIONBIO, &iMode);
+#endif
 
 	return true;
 }
 
-bool UDPSocket::send(const char* address, int port, char* data, int length)
+bool UDPSocket::send(const char* address, int port, const char* data, int length)
 {
 	struct sockaddr_in si_other;
 
@@ -87,7 +112,7 @@ bool UDPSocket::send(const char* address, int port, char* data, int length)
 	//now reply the client with the same data
 	if (sendto(mSocket, data, length, 0, (struct sockaddr*) &si_other, sizeof(si_other)) == SOCKET_ERROR)
 	{
-		printf("sendto() failed with error code : %d", WSAGetLastError());
+		printf("sendto() failed with error code : %d", socketerrno);
 		return false;
 	}
 
@@ -97,15 +122,15 @@ bool UDPSocket::send(const char* address, int port, char* data, int length)
 int UDPSocket::receive(char* data, int length)
 {
 	struct sockaddr_in si_other;
-	int slen = sizeof(si_other);
+	socktlen slen = sizeof(si_other);
 
 	//try to receive some data, this is a blocking call
 	int recv_len = 0;
 	if ((recv_len = recvfrom(mSocket, data, length, 0, (struct sockaddr *) &si_other, &slen)) == SOCKET_ERROR)
 	{
-		if (WSAGetLastError() != WSAEWOULDBLOCK)
+		if (socketerrno != SOCKET_EWOULDBLOCK)
 		{
-			printf("recvfrom() failed with error code : %d\n", WSAGetLastError());
+			printf("recvfrom() failed with error code : %d\n", socketerrno);
 		}
 
 		return 0;

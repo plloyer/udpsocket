@@ -62,15 +62,20 @@ int main(int argc, char* argv[])
 	}
 	else if (strcmp("unittest", argv[1]) == 0)
 	{
+		printf("Starting server.\n");
 		std::thread server(runServer);
+		printf("Starting client.\n");
 		std::thread client(runClient);
 
+		printf("Waiting for client to be done.\n");
 		client.join();
-		while (gServerPacketReceived < 3);
+		printf("Client Done.\n");
+		while (gServerPacketReceived < 3); //printf("Received: %i\n", gServerPacketReceived);
+		printf("Received 3 packets on server.\n");
 		done = true;
 		server.join();
 
-		printf("Server received all packets from client sucessfully.");
+		printf("Server received all packets from client sucessfully.\n");
 	}
 	else
 	{

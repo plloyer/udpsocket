@@ -22,7 +22,7 @@ OBJDIR	 = obj
 BINDIR   = bin
 
 CXX      = clang++-3.5
-CCFLAGS  = --std=c++11 -pthread -I$(SRCDIR) -I libs --cflags`
+CCFLAGS  = --std=c++11 -pthread -I$(SRCDIR) -I libs
 LDFLAGS  = -Wall
 
 # Turn debug on
