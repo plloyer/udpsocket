@@ -10,7 +10,7 @@
 #define SERVER_PORT 31000
 #define CLIENT_PORT 31001
 
-int gServerPacketReceived = 0;
+volatile int gServerPacketReceived = 0;
 bool done = false;
 
 void runServer()
