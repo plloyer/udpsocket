@@ -11,7 +11,7 @@
 #define SERVER_PORT 31000
 #define CLIENT_PORT 31001
 
-const char* serverAddress = "127.0.0.1";
+const char* serverIP = "127.0.0.1";
 volatile int gServerPacketReceived = 0;
 bool done = false;
 
@@ -40,7 +40,7 @@ void runClient()
 	UDPSocket udp;
 	udp.open(CLIENT_PORT);
 
-	Address serverAddress(serverAddress, SERVER_PORT);
+	Address serverAddress(serverIP, SERVER_PORT);
 
 	udp.send(serverAddress, "Test1!", 7);
 	udp.send(serverAddress, "Test2!", 7);
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 	else if(strcmp("client", argv[1]) == 0)
 	{
 		if (argc == 3)
-			serverAddress = argv[2];
+			serverIP = argv[2];
 		runClient();
 	}
 	else if (strcmp("unittest", argv[1]) == 0)
