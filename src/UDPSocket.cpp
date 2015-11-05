@@ -1,37 +1,11 @@
 #include "UDPSocket.h"
+#include "Address.h"
+#include "SocketIncludes.h"
 
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN 1
-#include <winsock2.h>
-#include <windows.h>
-#include <Ws2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
-
-#define socketerrno WSAGetLastError()
-#define SOCKET_EWOULDBLOCK WSAEWOULDBLOCK
-typedef int socktlen;
-#else
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
-
-#define INVALID_SOCKET (-1)
-#define SOCKET_ERROR   (-1)
-
-#include <errno.h>
-#define socketerrno errno
-#define SOCKET_EWOULDBLOCK EWOULDBLOCK
-typedef socklen_t socktlen;
-#endif
 
 void UDPSocket::Startup()
 {
@@ -95,19 +69,10 @@ bool UDPSocket::open(int port)
 	return true;
 }
 
-bool UDPSocket::send(const char* address, int port, const char* data, int length)
+bool UDPSocket::send(const Address& address, const char* data, int length)
 {
 	struct sockaddr_in si_other;
-
-	memset((char *)&si_other, 0, sizeof(si_other));
-	si_other.sin_family = AF_INET;
-	si_other.sin_port = htons(port);
-
-	if (inet_pton(AF_INET, address, &si_other.sin_addr) == 0)
-	{
-		perror("Unable to convert address from string to binary.");
-		return false;
-	}
+	address.GetSocketAddress(si_other);
 
 	//now reply the client with the same data
 	if (sendto(mSocket, data, length, 0, (struct sockaddr*) &si_other, sizeof(si_other)) == SOCKET_ERROR)
@@ -119,7 +84,7 @@ bool UDPSocket::send(const char* address, int port, const char* data, int length
 	return true;
 }
 
-int UDPSocket::receive(char* data, int length)
+int UDPSocket::receive(Address& senderAddress, char* data, int length)
 {
 	struct sockaddr_in si_other;
 	socktlen slen = sizeof(si_other);
@@ -138,11 +103,8 @@ int UDPSocket::receive(char* data, int length)
 
 	if (recv_len > 0)
 	{
-		// Print info about the received data as a string and show from where it came
-		char address[128];
-		inet_ntop(AF_INET, &si_other.sin_addr, address, 128);
-		printf("Received packet from %s:%d\n", address, ntohs(si_other.sin_port));
-		printf("Data: %s\n", data);
+		senderAddress.FromSocketAddress(si_other);
+		printf("Received packet from %s, Data: %s\n", senderAddress.ToString().c_str(), data);
 	}
 
 	return recv_len;

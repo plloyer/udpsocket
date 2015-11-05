@@ -3,6 +3,7 @@
 #include <string.h>
 #include <thread>
 
+#include "Address.h"
 #include "UDPSocket.h"
 
 #define BUFLEN 2048
@@ -23,7 +24,8 @@ void runServer()
 	memset(data, '\0', sBufferSize);
 
 	while (!done) {
-		int length = udp.receive(data, sBufferSize);
+		Address senderAddress;
+		int length = udp.receive(senderAddress, data, sBufferSize);
 		if (length > 0)
 		{
 			gServerPacketReceived++;
@@ -37,10 +39,11 @@ void runClient()
 	UDPSocket udp;
 	udp.open(CLIENT_PORT);
 
+	Address serverAddress("127.0.0.1", SERVER_PORT);
 
-	udp.send("127.0.0.1", SERVER_PORT, "Test1!", 7);
-	udp.send("127.0.0.1", SERVER_PORT, "Test2!", 7);
-	udp.send("127.0.0.1", SERVER_PORT, "Test3!", 7);
+	udp.send(serverAddress, "Test1!", 7);
+	udp.send(serverAddress, "Test2!", 7);
+	udp.send(serverAddress, "Test3!", 7);
 }
 
 int main(int argc, char* argv[])
@@ -50,6 +53,7 @@ int main(int argc, char* argv[])
 	if (argc != 2)
 	{
 		printf("Need command line argument 'client', 'server' or 'unittest'");
+		return 1;
 	}
 
 	if (strcmp("server", argv[1]) == 0)

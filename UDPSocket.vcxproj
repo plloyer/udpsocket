@@ -19,10 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Address.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\UDPSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Address.h" />
+    <ClInclude Include="src\SocketIncludes.h" />
     <ClInclude Include="src\UDPSocket.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -6,6 +6,8 @@ typedef __int64 Socket;
 typedef int Socket;
 #endif
 
+class Address;
+
 class UDPSocket
 {
 public:
@@ -16,8 +18,8 @@ public:
 	~UDPSocket();
 
 	bool open(int port);
-	bool send(const char* address, int port, const char* data, int length);
-	int receive(char* data, int length);
+	bool send(const Address& address, const char* data, int length);
+	int receive(Address& address, char* data, int length);
 
 private:
 	Socket mSocket;
