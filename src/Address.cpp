@@ -17,6 +17,12 @@ Address::Address()
 {
 }
 
+Address::Address(int port)
+	: m_ip(0)
+	, m_port(port)
+{
+}
+
 Address::Address(const char* stringAddress)
 {
 	char address[256];
@@ -35,6 +41,11 @@ Address::Address(const char* stringAddress)
 Address::Address(const char* stringAddress, int port)
 {
 	SetAddress(stringAddress, port);
+}
+
+Address::Address(const Address& rhs)
+{
+	*this = rhs;
 }
 
 void Address::SetAddress(const char* stringAddress, int port)
@@ -75,4 +86,10 @@ std::string Address::ToString() const
 	char address[128];
 	inet_ntop(AF_INET, &sockAddr.sin_addr, address, 128);
 	return std::string(address).append(":").append(std::to_string(m_port));
+}
+
+bool Address::operator==(const Address &rhs) const
+{
+	return m_port == rhs.m_port &&
+		m_ip == rhs.m_ip;
 }

@@ -20,11 +20,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Address.cpp" />
+    <ClCompile Include="src\BitStream.cpp" />
+    <ClCompile Include="src\Connection.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\NetInterface.cpp" />
     <ClCompile Include="src\UDPSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Address.h" />
+    <ClInclude Include="src\BitStream.h" />
+    <ClInclude Include="src\Connection.h" />
+    <ClInclude Include="src\NetInterface.h" />
     <ClInclude Include="src\SocketIncludes.h" />
     <ClInclude Include="src\UDPSocket.h" />
   </ItemGroup>

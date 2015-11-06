@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef _WIN32
-typedef __int64 Socket;
+typedef unsigned __int64 Socket;
 #else
 typedef int Socket;
 #endif
@@ -17,10 +17,10 @@ public:
 	UDPSocket();
 	~UDPSocket();
 
-	bool open(int port);
-	bool send(const Address& address, const char* data, int length);
-	int receive(Address& address, char* data, int length);
+	bool Open(int port);
+	bool Send(const Address& address, const char* data, int length);
+	int Receive(Address& address, char* data, int length);
 
 private:
-	Socket mSocket;
+	Socket m_socket;
 };

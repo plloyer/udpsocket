@@ -27,22 +27,22 @@ void UDPSocket::Cleanup()
 }
 
 UDPSocket::UDPSocket()
-	: mSocket(INVALID_SOCKET)
+	: m_socket(INVALID_SOCKET)
 {
 }
 
 UDPSocket::~UDPSocket()
 {
 #ifdef _WIN32
-	closesocket(mSocket);
+	closesocket(m_socket);
 #else
-	close(mSocket);
+	close(m_socket);
 #endif
 }
 
-bool UDPSocket::open(int port)
+bool UDPSocket::Open(int port)
 {
-	if ((mSocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+	if ((m_socket = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
 		printf("socket created\n");
 		
 	// TODO: Having multiple NIC, verify which is available externally and use this one as the source sin_addr
@@ -53,29 +53,29 @@ bool UDPSocket::open(int port)
 	myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	myaddr.sin_port = htons(port);
 
-	if (bind(mSocket, (struct sockaddr *)&myaddr, sizeof(myaddr)) < 0) {
-		perror("bind failed");
+	if (bind(m_socket, (struct sockaddr *)&myaddr, sizeof(myaddr)) < 0) {
+		printf("bind socket failed with error code: %d\n", socketerrno);
 		return false;
 	}
 
 	// Set socket to non blocking when calling recvfrom
 	u_long iMode=1;
 #ifdef _WIN32
-	ioctlsocket(mSocket, FIONBIO, &iMode);
+	ioctlsocket(m_socket, FIONBIO, &iMode);
 #else
-	ioctl(mSocket, FIONBIO, &iMode);
+	ioctl(m_socket, FIONBIO, &iMode);
 #endif
 
 	return true;
 }
 
-bool UDPSocket::send(const Address& address, const char* data, int length)
+bool UDPSocket::Send(const Address& address, const char* data, int length)
 {
 	struct sockaddr_in si_other;
 	address.GetSocketAddress(si_other);
 
 	//now reply the client with the same data
-	if (sendto(mSocket, data, length, 0, (struct sockaddr*) &si_other, sizeof(si_other)) == SOCKET_ERROR)
+	if (sendto(m_socket, data, length, 0, (struct sockaddr*) &si_other, sizeof(si_other)) == SOCKET_ERROR)
 	{
 		printf("sendto() failed with error code : %d", socketerrno);
 		return false;
@@ -84,14 +84,14 @@ bool UDPSocket::send(const Address& address, const char* data, int length)
 	return true;
 }
 
-int UDPSocket::receive(Address& senderAddress, char* data, int length)
+int UDPSocket::Receive(Address& senderAddress, char* data, int length)
 {
 	struct sockaddr_in si_other;
 	socktlen slen = sizeof(si_other);
 
-	//try to receive some data, this is a blocking call
+	//try to Receive some data, this is a blocking call
 	int recv_len = 0;
-	if ((recv_len = recvfrom(mSocket, data, length, 0, (struct sockaddr *) &si_other, &slen)) == SOCKET_ERROR)
+	if ((recv_len = recvfrom(m_socket, data, length, 0, (struct sockaddr *) &si_other, &slen)) == SOCKET_ERROR)
 	{
 		if (socketerrno != SOCKET_EWOULDBLOCK)
 		{

@@ -4,10 +4,11 @@
 #include <thread>
 
 #include "Address.h"
-#include "UDPSocket.h"
+#include "BitStream.h"
+#include "NetInterface.h"
 
 #define BUFLEN 2048
-#define MSGS 5	/* number of messages to send */
+#define MSGS 5	/* number of messages to Send */
 #define SERVER_PORT 31000
 #define CLIENT_PORT 31001
 
@@ -15,21 +16,30 @@ const char* serverIP = "127.0.0.1";
 volatile int gServerPacketReceived = 0;
 bool done = false;
 
+enum UserPacketType
+{
+	PacketType_String = Packet_ProtocolLast,
+};
+
 void runServer()
 {
-	UDPSocket udp;
-	udp.open(SERVER_PORT);
+	NetInterface netInterface(SERVER_PORT);
 
 	const int sBufferSize = 2048;
 	char data[sBufferSize];
 	memset(data, '\0', sBufferSize);
 
-	while (!done) {
+	while (!done) 
+	{
 		Address senderAddress;
-		int length = udp.receive(senderAddress, data, sBufferSize);
-		if (length > 0)
+		BitStream stream;
+		PacketType type = netInterface.Receive(senderAddress, stream);
+		if (type != Packet_None)
 		{
 			gServerPacketReceived++;
+
+			stream.ReadData((uint8_t*)data, sizeof(data));
+
 			memset(data, '\0', sBufferSize);
 		}
 	}
@@ -37,19 +47,29 @@ void runServer()
 
 void runClient()
 {
-	UDPSocket udp;
-	udp.open(CLIENT_PORT);
+	NetInterface netInterface(CLIENT_PORT);
 
 	Address serverAddress(serverIP, SERVER_PORT);
 
-	udp.send(serverAddress, "Test1!", 7);
-	udp.send(serverAddress, "Test2!", 7);
-	udp.send(serverAddress, "Test3!", 7);
+	BitStream stream;
+	stream.WriteByte(PacketType_String);
+	stream.WriteData((uint8_t*)"Test1!", 7);
+	netInterface.Send(serverAddress, stream);
+
+	BitStream stream2;
+	stream2.WriteByte(PacketType_String);
+	stream2.WriteData((uint8_t*)"Test2!", 7);
+	netInterface.Send(serverAddress, stream2);
+
+	BitStream stream3;
+	stream3.WriteByte(PacketType_String);
+	stream3.WriteData((uint8_t*)"Test3!", 7);
+	netInterface.Send(serverAddress, stream3);
 }
 
 int main(int argc, char* argv[])
 {
-	UDPSocket::Startup();
+	NetInterface::Startup();
 
 	if (argc < 2)
 	{
@@ -90,7 +110,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 	
-	UDPSocket::Cleanup();
+	NetInterface::Cleanup();
 
 	return 0;
 }
