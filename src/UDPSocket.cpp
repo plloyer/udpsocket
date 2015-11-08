@@ -28,6 +28,7 @@ void UDPSocket::Cleanup()
 
 UDPSocket::UDPSocket()
 	: m_socket(INVALID_SOCKET)
+	, m_port(0)
 {
 }
 
@@ -54,7 +55,7 @@ bool UDPSocket::Open(int port)
 	myaddr.sin_port = htons(port);
 
 	if (bind(m_socket, (struct sockaddr *)&myaddr, sizeof(myaddr)) < 0) {
-		printf("bind socket failed with error code: %d\n", socketerrno);
+		printf("bind socket failed for port %d with error code: %d\n", port, socketerrno);
 		return false;
 	}
 
@@ -65,6 +66,12 @@ bool UDPSocket::Open(int port)
 #else
 	ioctl(m_socket, FIONBIO, &iMode);
 #endif
+	
+#ifdef NET_DEBUG
+	printf("Socket bound to port: %d\n", port);
+#endif
+
+	m_port = port;
 
 	return true;
 }
@@ -104,7 +111,6 @@ int UDPSocket::Receive(Address& senderAddress, char* data, int length)
 	if (recv_len > 0)
 	{
 		senderAddress.FromSocketAddress(si_other);
-		printf("Received packet from %s, Data: %s\n", senderAddress.ToString().c_str(), data);
 	}
 
 	return recv_len;
