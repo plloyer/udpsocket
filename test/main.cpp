@@ -3,9 +3,9 @@
 #include <string.h>
 #include <thread>
 
-#include "Address.h"
-#include "BitStream.h"
-#include "NetInterface.h"
+#include <udpsocket/Address.h>
+#include <udpsocket/BitStream.h>
+#include <udpsocket/NetInterface.h>
 
 #define BUFLEN 2048
 #define MSGS 5	/* number of messages to Send */

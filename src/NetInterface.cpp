@@ -1,9 +1,9 @@
-#include "NetInterface.h"
+#include <udpsocket/NetInterface.h>
 
-#include "Address.h"
-#include "BitStream.h"
-#include "Connection.h"
-#include "UDPSocket.h"
+#include <udpsocket/Address.h>
+#include <udpsocket/BitStream.h>
+#include <udpsocket/Connection.h>
+#include <udpsocket/UDPSocket.h>
 
 
 void NetInterface::Startup()

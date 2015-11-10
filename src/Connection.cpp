@@ -1,8 +1,8 @@
-#include "Connection.h"
+#include <udpsocket/Connection.h>
 
-#include "Address.h"
-#include "BitStream.h"
-#include "NetInterface.h"
+#include <udpsocket/Address.h>
+#include <udpsocket/BitStream.h>
+#include <udpsocket/NetInterface.h>
 
 Connection::Connection(NetInterface& net, const Address& address)
 	: m_netInterface(net)

@@ -16,10 +16,14 @@ RPI=$(shell cat /proc/cpuinfo | grep Hardware | grep -c BCM2709)
 endif
 
 # All parameters goes here
-PROGRAMS = udpsocket
+LIBOUT   = libudpsocket.a
 SRCDIR   = src
 OBJDIR	 = obj
 BINDIR   = bin
+
+# Test
+TESTBIN  = udpsockettest
+TESTDIR  = test
 
 CXX      = clang++-3.5
 CCFLAGS  = --std=c++11 -pthread -I$(SRCDIR) -I libs
@@ -33,8 +37,9 @@ ifeq "$(RPI)" "1"
 # The recommended compiler flags for the Raspberry Pi
 CCFLAGS+= -D__RPI__ -Ofast -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s 
 endif
+CCFLAGS += -Iinclude
 
-all: $(BINDIR)/${PROGRAMS}
+all: $(BINDIR)/${LIBOUT}
 
 INCLUDES    := $(shell find $(SRCDIR) -name '*.h')
 SOURCES := $(shell find $(SRCDIR) -name '*.cpp')
@@ -47,20 +52,27 @@ ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NODEPS))))
 -include $(OBJECTS:%.o=%.d)
 endif
 
-$(BINDIR)/${PROGRAMS}: $(OBJECTS)
+$(BINDIR)/${LIBOUT}: $(OBJECTS)
 	@mkdir -p $(BINDIR)
-	@echo "[Lnk] $@"
-	$(CXX) ${CCFLAGS} ${OBJECTS} ${LDFLAGS} ${ADDLIBS} -o $@
+	@echo "[AR ] $@"
+	@$(AR) -cvq $@ ${OBJECTS} 
 
 $(OBJDIR)/%.d: $(SRCDIR)/%.cpp
 	@mkdir -p $(OBJDIRS)
 	@echo "[Dep] $< --> $@"
-	$(CXX) $(CCFLAGS) -MM -MT '$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$<)' $< -MF $@
+	@$(CXX) $(CCFLAGS) -MM -MT '$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$<)' $< -MF $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(OBJDIR)/%.d 
 	@mkdir -p $(OBJDIRS)
 	@echo "[Bld] $< --> $@"
-	$(CXX) $(CCFLAGS) -c $< -o $@
+	@$(CXX) $(CCFLAGS) -c $< -o $@
+
+test: $(BINDIR)/$(TESTBIN)
+
+$(BINDIR)/$(TESTBIN): $(TESTDIR)/main.cpp $(BINDIR)/${LIBOUT}
+	@mkdir -p $(BINDIR)
+	@echo "[Bld] $< --> $@"
+	@$(CXX) $(CCFLAGS) -L$(BINDIR) $< -ludpsocket -o $@
 
 clean:
 	rm -rf $(OBJDIRS)

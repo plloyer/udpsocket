@@ -1,6 +1,6 @@
-#include "UDPSocket.h"
-#include "Address.h"
-#include "SocketIncludes.h"
+#include <udpsocket/UDPSocket.h>
+#include <udpsocket/Address.h>
+#include <udpsocket/SocketIncludes.h>
 
 #include <stdlib.h>
 #include <stdint.h>
