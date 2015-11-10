@@ -1,8 +1,8 @@
 #include "BitStream.h"
 
 #include <algorithm>
-#include <io.h>
 #include <stdlib.h>
+#include <string.h>
 
 BitStream::BitStream(void)
 	: m_stream(nullptr)

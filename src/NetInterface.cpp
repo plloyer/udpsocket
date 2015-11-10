@@ -35,7 +35,7 @@ void NetInterface::Connect(const Address& destination)
 {
 	if (GetConnection(destination) == nullptr && GetPendingConnection(destination) == nullptr)
 	{
-		m_connectionPendingList.push_back(std::make_unique<Connection>(*this, destination));
+		m_connectionPendingList.push_back(std::unique_ptr<Connection>(new Connection(*this, destination)));
 
 		BitStream stream;
 		stream.WriteByte(Packet_ConnectRequest);
