@@ -23,7 +23,8 @@ enum UserPacketType
 
 void runServer()
 {
-	NetInterface netInterface(SERVER_PORT);
+	NetInterface netInterface;
+	netInterface.Open(SERVER_PORT);
 
 	const int sBufferSize = 2048;
 	char data[sBufferSize];
@@ -47,7 +48,8 @@ void runServer()
 
 void runClient()
 {
-	NetInterface netInterface(CLIENT_PORT);
+	NetInterface netInterface;
+	netInterface.Open(CLIENT_PORT);
 
 	Address serverAddress(serverIP, SERVER_PORT);
 
