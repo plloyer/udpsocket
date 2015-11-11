@@ -1,11 +1,11 @@
 #include <udpsocket/Address.h>
 #include <udpsocket/SocketIncludes.h>
 
-#include <string.h>
+#include <stdlib.h>
 
 namespace
 {
-	size_t strlcpy(char *d, char const *s, size_t n)
+	size_t strlcpy2(char *d, char const *s, size_t n)
 	{
 		return snprintf(d, n, "%s", s);
 	}
@@ -26,7 +26,7 @@ Address::Address(int port)
 Address::Address(const char* stringAddress)
 {
 	char address[256];
-	strlcpy(address, stringAddress, 256);
+	strlcpy2(address, stringAddress, 256);
 
 	char *portString = strchr(address, ':');
 	if (portString)

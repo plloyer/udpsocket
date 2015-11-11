@@ -91,13 +91,13 @@ bool UDPSocket::Send(const Address& address, const char* data, int length)
 	return true;
 }
 
-int UDPSocket::Receive(Address& senderAddress, char* data, int length)
+size_t UDPSocket::Receive(Address& senderAddress, char* data, int length)
 {
 	struct sockaddr_in si_other;
 	socktlen slen = sizeof(si_other);
 
 	//try to Receive some data, this is a blocking call
-	int recv_len = 0;
+	size_t recv_len = 0;
 	if ((recv_len = recvfrom(m_socket, data, length, 0, (struct sockaddr *) &si_other, &slen)) == SOCKET_ERROR)
 	{
 		if (socketerrno != SOCKET_EWOULDBLOCK)

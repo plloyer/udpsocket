@@ -1,4 +1,4 @@
-#include <udpsocket/NetInterface.h>
+#include "udpsocket/NetInterface.h"
 
 #include <udpsocket/Address.h>
 #include <udpsocket/BitStream.h>
@@ -64,11 +64,11 @@ void NetInterface::Send(const Address& destination, const BitStream& data)
 PacketType NetInterface::Receive(Address& senderAddress, BitStream& stream)
 {
 	static char buffer[2048];
-	int length;
+	size_t length;
 	while ((length = m_socket->Receive(senderAddress, buffer, sizeof(buffer))) > 0)
 	{
 		stream.Reset();
-		stream.WriteData(reinterpret_cast<uint8_t*>(buffer), length);
+		stream.WriteData(reinterpret_cast<uint8_t*>(buffer), static_cast<uint32_t>(length));
 		stream.SetCurrentPosition(0);
 		
 		uint8_t type = stream.ReadByte();

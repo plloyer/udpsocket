@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stddef.h>
+
 #ifdef _WIN32
 #include <winsock2.h>
 typedef SOCKET Socket;
@@ -20,7 +22,7 @@ public:
 
 	bool Open(int port);
 	bool Send(const Address& address, const char* data, int length);
-	int Receive(Address& address, char* data, int length);
+	size_t Receive(Address& address, char* data, int length);
 
 	int GetBoundPort() const { return m_port; }
 
