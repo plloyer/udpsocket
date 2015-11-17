@@ -39,7 +39,7 @@ void NetInterface::Connect(const Address& destination)
 
 		BitStream stream;
 		stream.WriteByte(Packet_ConnectRequest);
-		Send(destination, stream);
+		Send(destination, stream, Reliability::NotReliable);
 	}
 	else
 	{
@@ -47,7 +47,7 @@ void NetInterface::Connect(const Address& destination)
 	}
 }
 
-void NetInterface::Send(const Address& destination, const BitStream& data)
+void NetInterface::Send(const Address& destination, const BitStream& data, Reliability reliability)
 {
 	m_socket->Send(destination, reinterpret_cast<const char*>(data.GetStream()), data.GetStreamLength());
 
@@ -120,7 +120,7 @@ void NetInterface::HandleConnectionRequest(const Address& sender, const BitStrea
 	// Send the connection reponse
 	BitStream response;
 	response.WriteByte(Packet_ConnectResponse);
-	Send(sender, response);
+	Send(sender, response, Reliability::NotReliable);
 
 	printf("Connected to: %s\n", sender.ToString().c_str());
 }

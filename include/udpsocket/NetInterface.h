@@ -19,6 +19,12 @@ enum PacketType
 	Packet_ProtocolLast
 };
 
+enum class Reliability
+{
+	Reliable,
+	NotReliable
+};
+
 class NetInterface
 {
 public:
@@ -31,17 +37,18 @@ public:
 	bool Open(int bindPort);
 	void Connect(const Address& destination);
 
-	void Send(const Address& destination, const BitStream& data);
+	void Send(const Address& destination, const BitStream& data, Reliability reliability);
 	PacketType Receive(Address& senderAddress, BitStream& stream);
 
 	bool HasConnection() const { return !m_connectionList.empty(); }
 	bool HasPendingConnection() const { return !m_connectionPendingList.empty(); }
 	
 	int GetBoundPort() const;
-	
-private:
+
+protected:
 	virtual const char* GetPacketTypeName(PacketType type);
 
+private:
 	void HandlePacket(uint8_t packetType, const Address& sender, const BitStream& stream);
 	void HandleConnectionRequest(const Address& sender, const BitStream& stream);
 	void HandleConnectionResponse(const Address& sender, const BitStream& stream);

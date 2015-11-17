@@ -13,7 +13,7 @@ void UDPSocket::Startup()
 	WSADATA wsa;
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 	{
-		printf("Failed to initialize Winsock. Error Code : %d", socketerrno);
+		printf("Failed to initialize Winsock. Error Code : %d\n", socketerrno);
 		exit(EXIT_FAILURE);
 	}
 #endif
@@ -84,7 +84,7 @@ bool UDPSocket::Send(const Address& address, const char* data, int length)
 	//now reply the client with the same data
 	if (sendto(m_socket, data, length, 0, (struct sockaddr*) &si_other, sizeof(si_other)) == SOCKET_ERROR)
 	{
-		printf("sendto() failed with error code : %d", socketerrno);
+		printf("sendto() failed with error code : %d\n", socketerrno);
 		return false;
 	}
 

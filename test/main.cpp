@@ -56,17 +56,17 @@ void runClient()
 	BitStream stream;
 	stream.WriteByte(PacketType_String);
 	stream.WriteData((uint8_t*)"Test1!", 7);
-	netInterface.Send(serverAddress, stream);
+	netInterface.Send(serverAddress, stream, Reliability::Reliable);
 
 	BitStream stream2;
 	stream2.WriteByte(PacketType_String);
 	stream2.WriteData((uint8_t*)"Test2!", 7);
-	netInterface.Send(serverAddress, stream2);
+	netInterface.Send(serverAddress, stream2, Reliability::Reliable);
 
 	BitStream stream3;
 	stream3.WriteByte(PacketType_String);
 	stream3.WriteData((uint8_t*)"Test3!", 7);
-	netInterface.Send(serverAddress, stream3);
+	netInterface.Send(serverAddress, stream3, Reliability::Reliable);
 }
 
 int main(int argc, char* argv[])
