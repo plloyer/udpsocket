@@ -10,6 +10,17 @@ BitStream::BitStream(void)
 	Reset();
 }
 
+BitStream::BitStream(const BitStream& other)
+{
+	m_stream = (uint8_t*)malloc(other.m_streamLength*sizeof(uint8_t));;
+	m_streamLength = other.m_streamLength;
+	m_streamOffset = other.m_streamOffset;
+	m_currentBit = other.m_currentBit;
+	m_currentPosition = other.m_currentPosition;
+
+	memcpy(m_stream, other.m_stream, m_streamLength*sizeof(uint8_t));
+}
+
 BitStream::~BitStream(void)
 {
 	Reset();

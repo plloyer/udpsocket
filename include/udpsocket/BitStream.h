@@ -6,6 +6,7 @@ class BitStream
 {
 public:
 	BitStream();
+	BitStream(const BitStream& other);
 	~BitStream();
 
 	void			Reset();
@@ -41,6 +42,8 @@ public:
 	void			SetCurrentPosition(uint32_t dwCurrentPosition);
 
 private:
+	BitStream& operator =(const BitStream&) {}
+
 	void	 _WriteBit(uint8_t value);
 	void	 _ReadBit(uint8_t& value)  const;
 
