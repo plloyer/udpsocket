@@ -42,7 +42,7 @@ public:
 	void			SetCurrentPosition(uint32_t dwCurrentPosition);
 
 private:
-	BitStream& operator =(const BitStream&) {}
+	BitStream& operator =(const BitStream&)=delete;
 
 	void	 _WriteBit(uint8_t value);
 	void	 _ReadBit(uint8_t& value)  const;
