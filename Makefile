@@ -25,7 +25,14 @@ BINDIR   = bin
 TESTBIN  = udpsockettest
 TESTDIR  = test
 
+USE_GCC = 0
+
+ifeq "${USE_GCC}" "1"
+CXX      = g++
+else
 CXX      = clang++-3.5
+endif
+
 CCFLAGS  = --std=c++11 -pthread -I$(SRCDIR) -I libs
 LDFLAGS  = -Wall
 
