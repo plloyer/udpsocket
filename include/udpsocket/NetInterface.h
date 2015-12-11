@@ -48,14 +48,14 @@ public:
 protected:
 	virtual const char* GetPacketTypeName(PacketType type);
 
-private:
 	void HandlePacket(uint8_t packetType, const Address& sender, const BitStream& stream);
-	void HandleConnectionRequest(const Address& sender, const BitStream& stream);
-	void HandleConnectionResponse(const Address& sender, const BitStream& stream);
+	virtual void HandleConnectionRequest(const Address& sender, const BitStream& stream);
+	virtual void HandleConnectionResponse(const Address& sender, const BitStream& stream);
 
 	Connection* GetConnection(const Address& address);
 	Connection* GetPendingConnection(const Address& address);
 
+private:
 	std::unique_ptr<UDPSocket> m_socket;
 	std::vector<std::unique_ptr<Connection>> m_connectionList;
 	std::vector<std::unique_ptr<Connection>> m_connectionPendingList;
