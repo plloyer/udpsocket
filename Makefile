@@ -25,7 +25,11 @@ BINDIR   = bin
 TESTBIN  = udpsockettest
 TESTDIR  = test
 
+ifeq ($(shell which clang++-3.5 | grep -c "clang++-3.5"), 1)
 USE_GCC = 0
+else
+USE_GCC = 1
+endif
 
 ifeq "${USE_GCC}" "1"
 CXX      = g++
