@@ -5,6 +5,7 @@
 #include <udpsocket/Connection.h>
 #include <udpsocket/UDPSocket.h>
 
+//#define NET_DEBUG
 
 void NetInterface::Startup()
 {
@@ -24,6 +25,12 @@ NetInterface::NetInterface()
 NetInterface::~NetInterface()
 {
 
+}
+
+void NetInterface::Tick(float seconds)
+{
+	UpdateConnectionList(m_connectionPendingList, seconds);
+	UpdateConnectionList(m_connectionList, seconds);
 }
 
 bool NetInterface::Open(int bindPort)
@@ -54,10 +61,9 @@ void NetInterface::Send(const Address& destination, const BitStream& data, Relia
 #ifdef NET_DEBUG
 	const_cast<BitStream&>(data).SetCurrentPosition(0);
 	uint8_t type = data.ReadByte();
-	printf("Sent packet to %s, type: %s, Data: %s\n", 
+	printf("Sent packet to %s, type: %s\n", 
 		destination.ToString().c_str(), 
-		GetPacketTypeName(static_cast<PacketType>(type)), 
-		reinterpret_cast<const char*>(data.GetStream()));
+		GetPacketTypeName(static_cast<PacketType>(type)));
 #endif
 }
 
@@ -74,10 +80,9 @@ PacketType NetInterface::Receive(Address& senderAddress, BitStream& stream)
 		uint8_t type = stream.ReadByte();
 
 #ifdef NET_DEBUG
-		printf("Received packet from %s, Type: %s, Data: %s\n", 
+		printf("Received packet from %s, Type: %s\n", 
 			senderAddress.ToString().c_str(), 
-			GetPacketTypeName(static_cast<PacketType>(type)),
-			reinterpret_cast<const char*>(stream.GetStream()));
+			GetPacketTypeName(static_cast<PacketType>(type)));
 #endif
 
 		if (type < Packet_ProtocolLast)
@@ -103,6 +108,14 @@ void NetInterface::HandlePacket(uint8_t packetType, const Address& sender, const
 
 	case Packet_ConnectResponse:
 		HandleConnectionResponse(sender, stream);
+		break;
+
+	case Packet_Ping:
+		HandlePing(sender, stream);
+		break;
+
+	case Packet_Pong:
+		HandlePong(sender, stream);
 		break;
 		
 	default:
@@ -133,6 +146,8 @@ void NetInterface::HandleConnectionResponse(const Address& sender, const BitStre
 		if (*(*it)->GetAddress() == sender)
 		{
 			connection = (*it).get();
+			connection->PingReceived();
+
 			m_connectionList.push_back(std::move(*it));
 			m_connectionPendingList.erase(it);
 			break;
@@ -147,6 +162,28 @@ void NetInterface::HandleConnectionResponse(const Address& sender, const BitStre
 	else
 	{
 		printf("Unable to find connection for connection response from: %s\n", sender.ToString().c_str());
+	}
+}
+
+void NetInterface::HandlePing(const Address& sender, const BitStream& stream)
+{
+	Connection* connection = GetConnection(sender);
+	if (connection != nullptr)
+	{
+		connection->PingReceived();
+
+		BitStream stream;
+		stream.WriteByte(Packet_Pong);
+		Send(sender, stream, Reliability::NotReliable);
+	}
+}
+
+void NetInterface::HandlePong(const Address& sender, const BitStream& stream)
+{
+	Connection* connection = GetConnection(sender);
+	if (connection != nullptr)
+	{
+		connection->PingReceived();
 	}
 }
 
@@ -178,6 +215,8 @@ const char* NetInterface::GetPacketTypeName(PacketType type)
 	case Packet_None:				return "Packet_None";
 	case Packet_ConnectRequest:		return "Packet_ConnectRequest";
 	case Packet_ConnectResponse:	return "Packet_ConnectResponse";
+	case Packet_Ping:				return "Packet_Ping";
+	case Packet_Pong:				return "Packet_Pong";
 	default:						break;
 	}
 
@@ -191,4 +230,35 @@ const char* NetInterface::GetPacketTypeName(PacketType type)
 int NetInterface::GetBoundPort() const
 {
 	return m_socket->GetBoundPort();
+}
+
+void NetInterface::PingConnections(float frequency)
+{
+	BitStream stream;
+	stream.WriteByte(Packet_Ping);
+
+	for (auto& connection : m_connectionList)
+	{
+		if (connection->GetLastPingSentTimer() > frequency)
+		{
+			connection->PingSent();
+			Send(*connection->GetAddress(), stream, Reliability::NotReliable);
+		}
+	}
+}
+
+void NetInterface::UpdateConnectionList(std::vector<std::unique_ptr<Connection>>& connections, float seconds)
+{
+	auto it = connections.begin();
+	while (it != connections.end())
+	{
+		(*it)->Update(seconds);
+		if ((*it)->IsConnectionTimedout())
+		{
+			printf("Warning: Connection timed out: %s\n", (*it)->GetAddress()->ToString().c_str());
+			it = connections.erase(it);
+		}
+		else
+			++it;
+	}
 }

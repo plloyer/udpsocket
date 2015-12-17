@@ -15,6 +15,8 @@ enum PacketType
 	Packet_None,
 	Packet_ConnectRequest,
 	Packet_ConnectResponse,
+	Packet_Ping,
+	Packet_Pong,
 
 	Packet_ProtocolLast
 };
@@ -34,6 +36,8 @@ public:
 	NetInterface();
 	virtual ~NetInterface();
 
+	virtual void Tick(float seconds);
+
 	bool Open(int bindPort);
 	void Connect(const Address& destination);
 
@@ -46,11 +50,17 @@ public:
 	int GetBoundPort() const;
 
 protected:
+	void PingConnections(float frequence);
+
 	virtual const char* GetPacketTypeName(PacketType type);
 
 	void HandlePacket(uint8_t packetType, const Address& sender, const BitStream& stream);
 	virtual void HandleConnectionRequest(const Address& sender, const BitStream& stream);
 	virtual void HandleConnectionResponse(const Address& sender, const BitStream& stream);
+	virtual void HandlePing(const Address& sender, const BitStream& stream);
+	virtual void HandlePong(const Address& sender, const BitStream& stream);
+
+	void UpdateConnectionList(std::vector<std::unique_ptr<Connection>>& connections, float seconds);
 
 	Connection* GetConnection(const Address& address);
 	Connection* GetPendingConnection(const Address& address);
